@@ -12,7 +12,8 @@ import { Button } from "@burnt-labs/ui";
 import "@burnt-labs/ui/dist/index.css";
 import type { ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 
-const contractAddress = "";
+const contractAddress = "xion1huwf4ymlcdchl0y44f6qhlrdpp943m2pz8qtssfvt805rjfr0s0qh7zd7c";
+const treasuryAddress = "xion1gu5kdeglgpy76pfxy5g9ckaf8wen7esjyz8yvy3wv6x87h3r0s0q3ps72s";
 
 type ExecuteResultOrUndefined = ExecuteResult | undefined;
 
@@ -30,50 +31,88 @@ export default function Page(): JSX.Element {
 
   const blockExplorerUrl = `https://www.mintscan.io/xion-testnet/tx/${executeResult?.transactionHash}`;
 
-  // Fetch the count from the smart contract
-  const getCount = async () => {
-    setLoading(true);
+  // Fetch the contract balance from the smart contract
+  const getBalance = async () => {
     try {
-      const response = await queryClient?.queryContractSmart(contractAddress, { get_count: {} });
-      setCount(response.count);
-      console.log("Get Count:", response);
+      const response = await queryClient?.queryContractSmart(contractAddress, { get_balance: { address: account?.bech32Address } });
+      setCount(response?.balance?.[0]?.amount || "0");
+      console.log("Get Balance:", response);
     } catch (error) {
       console.error("Error querying contract:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Increment the count in the smart contract
-  const increment = async () => {
+  const deposit = async () => {
     setLoading(true);
-    const msg = { increment: {} };
+    const msg = { deposit: {} };
 
     try {
-      const res = await client?.execute(account.bech32Address, contractAddress, msg, {
-        amount: [{
+      // Make sure to send funds with the deposit message
+      // The contract requires funds to be sent using must_pay, which fails if no funds are sent
+      const res = await client?.execute(
+        account.bech32Address, 
+        contractAddress, 
+        msg, 
+        {
+          gas: "500000",
+          granter: treasuryAddress,
+          amount: [{
+            denom: "uxion",
+            amount: "1000"
+          }]
+        },
+        "",      // Empty memo
+        [{      // Explicitly pass funds as the 6th parameter
           denom: "uxion",
           amount: "1000"
-        }],
-        gas: "500000",
-        granter: "",
-      });
+        }]
+      );
       setExecuteResult(res);
-      console.log("Transaction successful:", res);
-      await getCount(); // Refresh count after successful increment
+      console.log("Deposit successful:", res);
+      await getBalance(); // Refresh balance after successful deposit
     } catch (error) {
-      console.error("Error executing transaction:", error);
+      console.error("Error executing deposit:", error);
+      alert(`Deposit failed: ${error instanceof Error ? error.message : "Unknown error"}`);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch count on page load
-  useEffect(() => {
-    if (queryClient) {
-      getCount();
+  const withdraw = async () => {
+    setLoading(true);
+    const msg = { withdraw: {} };
+
+    try {
+      const res = await client?.execute(account.bech32Address, 
+        contractAddress, 
+        msg, 
+        {
+          gas: "500000",
+          granter: treasuryAddress,
+          amount: [{
+            denom: "uxion",
+            amount: "1000"
+          }]
+        },
+        "",
+        []
+      );
+      setExecuteResult(res);
+      console.log("Withdrawal successful:", res);
+      await getBalance(); // Refresh balance after successful withdrawal
+    } catch (error) {
+      console.error("Error executing withdrawal:", error);
+    } finally {
+      setLoading(false);
     }
-  }, [queryClient]);
+  };
+
+  // Fetch balances on page load or when account/client changes
+  useEffect(() => {
+    if (queryClient && account?.bech32Address) {
+      getBalance();
+    }
+  }, [queryClient, account]);
 
   return (
     <main className="m-auto flex min-h-screen max-w-xs flex-col items-center justify-center gap-4 p-4">
@@ -85,11 +124,14 @@ export default function Page(): JSX.Element {
 
       {client && (
         <>
-          <Button disabled={loading} fullWidth onClick={getCount} structure="base">
-            {loading ? "LOADING..." : "Get Count"}
+          <Button disabled={loading} fullWidth onClick={getBalance} structure="base">
+            {loading ? "LOADING..." : "Get Balance"}
           </Button>
-          <Button disabled={loading} fullWidth onClick={increment} structure="base">
-            {loading ? "LOADING..." : "INCREMENT"}
+          <Button disabled={loading} fullWidth onClick={deposit} structure="base">
+            {loading ? "LOADING..." : "DEPOSIT"}
+          </Button>
+          <Button disabled={loading} fullWidth onClick={withdraw} structure="base">
+            {loading ? "LOADING..." : "WITHDRAW"}
           </Button>
           {logout && (
             <Button disabled={loading} fullWidth onClick={logout} structure="base">
@@ -101,12 +143,17 @@ export default function Page(): JSX.Element {
 
       <Abstraxion onClose={() => setShowModal(false)} />
 
-      {count !== null && (
-        <div className="border-2 border-primary rounded-md p-4 flex flex-row gap-4">
-          <div className="flex flex-row gap-6">
-            <div>Count:</div>
-            <div>{count}</div>
-          </div>
+      {account?.bech32Address && (
+        <div className="w-full">
+          {/* Contract Balance Display */}
+          {count !== null && (
+            <div className="border-2 border-primary rounded-md p-4 flex flex-col gap-2">
+              <div className="text-center font-bold">Contract Balance</div>
+              <div className="flex flex-row justify-center gap-2">
+                <div>{count} uxion</div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

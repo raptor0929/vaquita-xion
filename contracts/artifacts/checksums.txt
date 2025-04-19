@@ -1,0 +1,2 @@
+8bc4882169ecb26ff8e080a1ae993a583b4318a4dccca0059d12c13cc06b172c  cw_counter.wasm
+0c2bc6692ce3e397707c6dcfc8eb5cf4eb38598f6c3fc7dadfbfe34eca71ea27  vaquita_xion.wasm
