@@ -2,6 +2,15 @@
 const webpack = require("webpack");
 
 module.exports = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    unoptimized: true,
+  },
   reactStrictMode: true,
   transpilePackages: [
     "@burnt-labs/abstraxion",

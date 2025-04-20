@@ -1,3 +1,19 @@
+# Vaquita-Xion 🐮
+
+A save to earn game that rewards users that accomplish their financial goals.
+
+Xion Integrations:
+
+- Abstraxion library
+
+Smart contracts in Xion testnet 2:
+
+- Treasury: [xion1gu5kdeglgpy76pfxy5g9ckaf8wen7esjyz8yvy3wv6x87h3r0s0q3ps72s](https://www.mintscan.io/xion-testnet/address/xion1gu5kdeglgpy76pfxy5g9ckaf8wen7esjyz8yvy3wv6x87h3r0s0q3ps72s)
+- Vaquita-Xion contract: [xion1huwf4ymlcdchl0y44f6qhlrdpp943m2pz8qtssfvt805rjfr0s0qh7zd7c](https://www.mintscan.io/xion-testnet/address/xion1huwf4ymlcdchl0y44f6qhlrdpp943m2pz8qtssfvt805rjfr0s0qh7zd7c)
+    - deposit: join the game
+    - withdraw: get out of the game 
+
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
